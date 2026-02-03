@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL!;
+import { useCallback, useEffect, useState } from "react";
 
 interface Content {
   id: string;
@@ -22,28 +20,38 @@ export default function DisplayClient({ display }: { display: Display }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [rotation, setRotation] = useState(display.rotation);
   const [contents, setContents] = useState(display.contents);
+  const [showFullscreenHint, setShowFullscreenHint] = useState(false);
   const current = contents[currentIndex];
+  const requestFullscreen = useCallback(async () => {
+    if (typeof document === "undefined") return;
+    if (document.fullscreenElement) {
+      setShowFullscreenHint(false);
+      return;
+    }
+    try {
+      await document.documentElement.requestFullscreen();
+      setShowFullscreenHint(false);
+    } catch (error) {
+      console.warn("Falha ao entrar em tela cheia automaticamente", error);
+      setShowFullscreenHint(true);
+    }
+  }, []);
 
   // 🔁 Player (rotação automática)
-    useEffect(() => {
-        if (!current) return;
+  useEffect(() => {
+    if (!current) return;
 
-        const duration = current.duration ?? 10000;
+    const duration = current.duration ?? 10000;
 
-        const timer = setTimeout(() => {
-          setCurrentIndex((prev) =>
-            prev + 1 >= contents.length ? 0 : prev + 1
-          );
-        }, duration);
+    const timer = setTimeout(() => {
+      setCurrentIndex((prev) => (prev + 1 >= contents.length ? 0 : prev + 1));
+    }, duration);
 
-        return () => clearTimeout(timer);
-      }, [currentIndex, current, contents.length]);
+    return () => clearTimeout(timer);
+  }, [currentIndex, current, contents.length]);
 
-      
-
-    // 🔌 WebSocket (Realtime)
-    useEffect(() => {
-      
+  // 🔌 WebSocket (Realtime)
+  useEffect(() => {
     const ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL!);
 
     ws.onopen = () => {
@@ -64,61 +72,72 @@ export default function DisplayClient({ display }: { display: Display }) {
         data.event?.startsWith("CONTENT_") ||
         data.event === "DISPLAY_UPDATED"
       ) {
-      fetch(`/api/display/${display.id}`, {
-        cache: "no-store",
-      })
-        .then((res) => res.json())
-        .then((updated) => {
-          setContents(updated.contents);
-          setRotation(updated.rotation);
-          setCurrentIndex(0);
-        });
-
+        fetch(`/api/display/${display.id}`, {
+          cache: "no-store",
+        })
+          .then((res) => res.json())
+          .then((updated) => {
+            setContents(updated.contents);
+            setRotation(updated.rotation);
+            setCurrentIndex(0);
+          });
       }
     };
-
 
     return () => ws.close();
   }, [display.id]);
 
+  useEffect(() => {
+    requestFullscreen();
+  }, [requestFullscreen]);
 
   return (
-  <div className="w-screen h-screen flex items-center justify-center bg-black overflow-hidden">
     <div
-      className="relative bg-black"
-      style={{
-        aspectRatio: "16 / 9",
-        height: "100%",
-        transform: `rotate(${rotation}deg)`,
-      }}
+      className="w-screen h-screen flex items-center justify-center bg-black overflow-hidden"
+      onClick={requestFullscreen}
     >
-      <div className="absolute inset-0 flex items-center justify-center">
-        {current?.type === "image" && (
-          <img
-            src={`${current.filePath}?v=${current.id}`}
-            className="w-full h-full object-contain"
-          />
-        )}
+      <div
+        className="relative bg-black"
+        style={{
+          aspectRatio: "16 / 9",
+          height: "100%",
+          transform: `rotate(${rotation}deg)`,
+        }}
+      >
+        <div className="absolute inset-0 flex items-center justify-center">
+          {current?.type === "image" && (
+            <img
+              src={`${current.filePath}?v=${current.id}`}
+              className="w-full h-full object-contain"
+            />
+          )}
 
-        {current?.type === "video" && (
-          <video
-            src={`${current.filePath}?v=${current.id}`}
-            autoPlay
-            muted
-            className="w-full h-full object-contain"
-          />
+          {current?.type === "video" && (
+            <video
+              src={`${current.filePath}?v=${current.id}`}
+              autoPlay
+              muted
+              className="w-full h-full object-contain"
+            />
+          )}
 
-        )}
-
-        {current?.type === "pdf" && (
-          <iframe
-            src={`${current.filePath}?v=${current.id}`}
-            className="w-full h-full"
-          />
-        )}
+          {current?.type === "pdf" && (
+            <iframe
+              src={`${current.filePath}?v=${current.id}`}
+              className="w-full h-full"
+            />
+          )}
+        </div>
       </div>
+      {showFullscreenHint && (
+        <button
+          type="button"
+          onClick={requestFullscreen}
+          className="absolute right-4 top-4 rounded bg-white/90 px-3 py-2 text-sm font-semibold text-black shadow"
+        >
+          Toque para tela cheia
+        </button>
+      )}
     </div>
-  </div>
-);
-
+  );
 }

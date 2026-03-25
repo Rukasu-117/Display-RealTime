@@ -1,24 +1,15 @@
 "use client";
 
+import type { DisplayWithContents } from "@/types/display";
 import { useEffect, useState } from "react";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL!;
 
-interface Content {
-  id: string;
-  type: string;
-  filePath: string;
-  duration?: number | null;
-}
-
-interface Display {
-  id: string;
-  rotation: number;
-  aspectRatio: string;
-  contents: Content[];
-}
-
-export default function DisplayClient({ display }: { display: Display }) {
+export default function DisplayClient({
+  display,
+}: {
+  display: DisplayWithContents;
+}) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [rotation, setRotation] = useState(display.rotation);
   const [contents, setContents] = useState(display.contents);
@@ -83,7 +74,7 @@ export default function DisplayClient({ display }: { display: Display }) {
 
 
   return (
-  <div className="w-screen h-screen flex items-center justify-center bg-black overflow-hidden">
+  <div className="display-runtime flex items-center justify-center">
     <div
       className="relative bg-black"
       style={{

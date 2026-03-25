@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { DisplayWithContents } from "@/types/display";
 import DisplayClient from "./DisplayClient";
 
 interface PageProps {
@@ -19,11 +20,11 @@ export default async function DisplayPage({ params }: PageProps) {
 
   if (!display) {
     return (
-      <div className="flex h-screen items-center justify-center text-red-500">
+      <div className="display-runtime flex items-center justify-center text-red-500">
         Display não encontrado
       </div>
     );
   }
 
-  return <DisplayClient display={display} />;
+  return <DisplayClient display={display as DisplayWithContents} />;
 }

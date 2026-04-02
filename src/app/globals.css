@@ -61,3 +61,122 @@ iframe {
   background: #000;
   color: #fff;
 }
+
+.glass-sidebar {
+  background:
+    radial-gradient(circle at top, rgba(255, 146, 47, 0.08), transparent 18%),
+    linear-gradient(180deg, rgba(10, 18, 32, 0.98) 0%, rgba(8, 14, 24, 0.98) 100%);
+}
+
+.login-screen {
+  background:
+    radial-gradient(circle at top right, rgba(54, 91, 138, 0.35), transparent 25%),
+    radial-gradient(circle at bottom left, rgba(90, 126, 174, 0.18), transparent 30%),
+    linear-gradient(180deg, #08111e 0%, #091426 55%, #0b1627 100%);
+}
+
+.login-card-panel {
+  animation: login-fade-up 0.7s ease-out both;
+}
+
+.login-fade-up {
+  animation: login-fade-up 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.login-orb {
+  pointer-events: none;
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(10px);
+  animation: login-float 10s ease-in-out infinite;
+}
+
+.login-orb-primary {
+  right: 8%;
+  top: 4rem;
+  height: 15rem;
+  width: 15rem;
+  background: radial-gradient(circle, rgba(54, 91, 138, 0.5) 0%, rgba(54, 91, 138, 0) 72%);
+}
+
+.login-orb-secondary {
+  left: 2rem;
+  bottom: 5rem;
+  height: 12rem;
+  width: 12rem;
+  animation-delay: -3s;
+  background: radial-gradient(circle, rgba(45, 77, 123, 0.35) 0%, rgba(45, 77, 123, 0) 72%);
+}
+
+.login-orb-tertiary {
+  left: 18%;
+  top: 18%;
+  height: 22rem;
+  width: 22rem;
+  animation-delay: -6s;
+  background: radial-gradient(circle, rgba(90, 126, 174, 0.12) 0%, rgba(90, 126, 174, 0) 72%);
+}
+
+.login-grid {
+  pointer-events: none;
+  position: absolute;
+  height: 1px;
+  background: rgba(183, 199, 218, 0.15);
+}
+
+.login-grid::before,
+.login-grid::after {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  background: rgba(200, 215, 232, 0.28);
+}
+
+.login-grid::before {
+  left: 0;
+  top: -1px;
+  height: 3px;
+  width: 3px;
+}
+
+.login-grid::after {
+  right: 0;
+  top: -1px;
+  height: 2px;
+  width: 2px;
+}
+
+.login-grid-left {
+  left: 4.5rem;
+  top: 28%;
+  width: 7rem;
+  transform: rotate(-28deg);
+}
+
+.login-grid-right {
+  right: 9rem;
+  top: 23%;
+  width: 6rem;
+  transform: rotate(22deg);
+}
+
+@keyframes login-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0) scale(1.04);
+  }
+}
+
+@keyframes login-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

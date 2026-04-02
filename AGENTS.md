@@ -14,6 +14,8 @@
 - Treat the app as two separate surfaces:
   - admin app under `/admin/**`
   - public player under `/display/[displayId]`
+- All admin pages and admin APIs now require LDAP-backed authentication.
+- Admin sessions last 4 hours; after that, users must authenticate again.
 - The admin can be restyled and reorganized, but the public player is runtime-sensitive and should remain isolated.
 - Keep `page.tsx` files server-first; fetch data there and pass props to feature components.
 - Use client components only where browser APIs, form state, navigation, upload, reorder, confirm dialogs, or imperative refresh logic are required.
@@ -94,6 +96,10 @@
   - render `AdminPageShell`
   - render `PageHeader`
   - render feature components from `src/components/admin/displays`
+- Navigation rule:
+  - sidebar currently exposes only `Displays`
+  - `Novo Display` lives as an in-page action, not a persistent sidebar item
+- These routes are protected by `src/middleware.ts`; do not add duplicate page-local auth unless intentionally layering authorization.
 - Important behavior rules:
   - `Visualizar` from list items still opens `/display/[id]`
   - `Abrir preview` from contents opens `/admin/displays/[id]/preview`
@@ -110,6 +116,13 @@
   - refresh after content/display changes
 - This area is runtime-sensitive. Avoid coupling admin UI concerns here.
 
+#### `src/app/login/**`
+
+- Administrative sign-in entrypoint.
+- `src/app/login/page.tsx` is server-first and redirects authenticated users back to their safe callback URL.
+- Keep this page public even when `/admin/**` is protected.
+- Login visual language follows the Pencil-selected layout, but must remain compatible with the actual LDAP credential flow.
+
 #### `src/app/api/**`
 
 - API handlers write to Prisma and often emit WS events or invalidate caches.
@@ -125,17 +138,39 @@
   - `src/app/api/file/[...path]/route.ts` -> serves uploaded files
   - `src/app/api/ws/route.ts` -> related WS access
 - If a mutation affects playback, make sure the matching WS event is still emitted.
+- `src/app/api/admin/**` is protected by middleware and should be treated as authenticated-only surface.
+- `src/app/api/display/**` and `src/app/api/file/**` remain public-facing for the player runtime.
 
 ### `src/components/`
 
 - Shared React components live here.
 - Prefer adding new work here instead of duplicating route-local JSX.
 
+#### `src/components/auth/`
+
+- Authentication-specific UI lives here.
+- Current components:
+  - `LoginForm.tsx`
+  - `login-shell.tsx`
+  - `login-hero.tsx`
+  - `login-card.tsx`
+- Responsibility breakdown:
+  - `LoginForm.tsx` owns credential submit flow, inline errors, loading state, and callback redirect handling
+  - `login-shell.tsx` owns the full-screen login composition and decorative background structure
+  - `login-hero.tsx` owns the institutional/marketing side of the login screen
+  - `login-card.tsx` owns the translucent card container around the form
+- Rules:
+  - keep LDAP/auth logic out of purely visual auth components
+  - keep callback URL sanitization in shared auth helpers, not inline in multiple components
+  - prefer Tailwind + global CSS animations before introducing heavy animation libraries
+
 #### `src/components/ui/`
 
 - Generic UI primitives only.
 - Current primitives:
   - `admin-page-shell.tsx`
+  - `admin-topbar.tsx`
+  - `user-menu.tsx`
   - `page-header.tsx`
   - `button.tsx`
   - `confirm-action-button.tsx`
@@ -194,6 +229,9 @@
   - `src/lib/prisma.ts` -> Prisma singleton
   - `src/lib/ws.ts` -> admin-to-WS bridge emitter
   - `src/lib/auth/ad.ts` -> LDAP auth helper
+  - `src/lib/auth/config.ts` -> shared NextAuth configuration and session policy
+  - `src/lib/auth/redirect.ts` -> safe callback URL helpers for auth redirects
+  - `src/lib/auth/user-sync.ts` -> persists LDAP-authenticated admin users into Prisma
 - Rules:
   - keep infra helpers side-effect-focused and reusable
   - avoid pushing UI concerns into `src/lib`
@@ -201,7 +239,7 @@
 ### `prisma/`
 
 - Source of truth for the database schema and migrations.
-- `prisma/schema.prisma` defines the `Display` and `Content` models.
+- `prisma/schema.prisma` defines the `Display`, `Content`, and `AdminUser` models.
 - If new UI requires new persisted data, update Prisma first and then propagate to types, API handlers, and UI.
 
 ### `ws-server/`
@@ -218,6 +256,22 @@
 - Fetches displays and content counts.
 - Uses `DisplaysList` and `DisplayActions`.
 - `Visualizar` goes directly to `/display/[id]`.
+
+### LDAP Login
+
+- Route: `/login`
+- Uses the Pencil-inspired login shell and `LoginForm`.
+- Accepts `callbackUrl` and redirects back after successful login.
+- Invalid credentials stay on the same page with friendly error feedback.
+
+### Admin Route Protection
+
+- `src/middleware.ts` protects:
+  - `/admin/**`
+  - `/api/admin/**`
+- Unauthenticated page access redirects to `/login?callbackUrl=...`
+- Unauthenticated API access returns `401`
+- Public display routes remain accessible without login
 
 ### Create Display
 
@@ -257,6 +311,7 @@
   - autoplay content
   - respect rotation
   - reload from WS-driven changes
+- Must remain publicly accessible even after admin authentication changes.
 
 ## Component Recognition Rules
 
@@ -356,6 +411,15 @@ src/
 - Compose with `AdminPageShell` and `PageHeader`.
 - Add new feature UI under the narrowest folder in `src/components`.
 - Reuse existing cards, buttons, and field components before creating new ones.
+- New admin routes automatically fall under LDAP protection if they live under `/admin/**`; preserve that behavior.
+
+### If changing authentication
+
+- Keep LDAP validation centralized in `src/lib/auth/ad.ts`.
+- Keep session policy centralized in `src/lib/auth/config.ts`.
+- Keep callback URL sanitization centralized in `src/lib/auth/redirect.ts`.
+- If protecting new administrative APIs, prefer extending middleware coverage over duplicating guards inside each handler.
+- Do not accidentally protect `/display/**`, `/api/display/**`, or `/api/file/**`.
 
 ### If adding new display-related interactions
 
@@ -395,6 +459,7 @@ src/
 - Always run `npx tsc --noEmit` after structural changes.
 - Run `npm run build` after route/layout changes.
 - Use Playwright smoke checks when admin interactions are touched.
+- Re-validate login and auth redirect flows whenever `next-auth`, middleware, or `/login` changes.
 - For displays-related work, validate all of these when relevant:
   - `/admin/displays`
   - `/admin/displays/new`
@@ -402,6 +467,8 @@ src/
   - `/admin/displays/[id]/contents`
   - `/admin/displays/[id]/preview`
   - `/display/[displayId]`
+  - `/login`
+  - `/api/admin/**` unauthenticated access
 
 ## Important Existing Constraints
 
@@ -409,6 +476,8 @@ src/
 - `duration-field.tsx` must preserve the form field named `duration`.
 - `Visualizar` should continue opening `/display/[id]` directly.
 - `Abrir preview` from contents should continue opening `/admin/displays/[id]/preview`.
+- `/admin/**` and `/api/admin/**` must remain LDAP-protected.
+- Login session duration is 4 hours.
 - CRUD operations that affect display playback must continue emitting WS events.
 - Avoid broad changes to auth or display runtime while restyling the admin flow.
 

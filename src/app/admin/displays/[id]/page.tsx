@@ -8,7 +8,6 @@ import { prisma } from "@/lib/prisma";
 
 const navItems = [
   { href: "/admin/displays", label: "Displays", active: true },
-  { href: "/admin/displays/new", label: "Novo Display" },
 ];
 
 export default async function EditDisplayPage({
@@ -22,7 +21,12 @@ export default async function EditDisplayPage({
 
   if (!display) {
     return (
-      <AdminPageShell navItems={navItems} brandSubtitle="Painel de gerenciamento">
+      <AdminPageShell
+        navItems={navItems}
+        brandSubtitle="Digital signage enterprise"
+        pageTitle="Editar Display"
+        pageSubtitle="O display solicitado não foi encontrado ou já foi removido."
+      >
         <PageHeader
           title="Editar Display"
           description="O display solicitado não foi encontrado ou já foi removido."
@@ -44,7 +48,12 @@ export default async function EditDisplayPage({
   }
 
   return (
-    <AdminPageShell navItems={navItems} brandSubtitle="Painel de gerenciamento">
+    <AdminPageShell
+      navItems={navItems}
+      brandSubtitle="Digital signage enterprise"
+      pageTitle="Editar Display"
+      pageSubtitle="Atualize identidade, rotação e acessos operacionais do display selecionado."
+    >
       <PageHeader
         title="Editar Display"
         description="Atualize o nome do display e a rotação aplicada no player público." 
@@ -56,14 +65,7 @@ export default async function EditDisplayPage({
             >
               Gerenciar conteúdos
             </Link>
-            <a
-              href={`/display/${display.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-10 items-center justify-center rounded-md border border-[var(--color-accent)] bg-[var(--color-accent)] px-5 py-2.5 text-sm font-medium text-[#0F1317] transition-colors hover:border-[var(--color-accent-hover)] hover:bg-[var(--color-accent-hover)]"
-            >
-              Abrir preview
-            </a>
+
           </div>
         }
       />

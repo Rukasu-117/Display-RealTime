@@ -9,7 +9,6 @@ import { prisma } from "@/lib/prisma";
 
 const navItems = [
   { href: "/admin/displays", label: "Displays", active: true },
-  { href: "/admin/displays/new", label: "Novo Display" },
 ];
 
 export default async function DisplayContentsPage({
@@ -26,7 +25,12 @@ export default async function DisplayContentsPage({
 
   if (!display) {
     return (
-      <AdminPageShell navItems={navItems} brandSubtitle="Painel de gerenciamento">
+      <AdminPageShell
+        navItems={navItems}
+        brandSubtitle="Digital signage enterprise"
+        pageTitle="Conteúdos do Display"
+        pageSubtitle="O display solicitado não foi encontrado ou já foi removido."
+      >
         <PageHeader
           title="Conteúdos do Display"
           description="O display solicitado não foi encontrado ou já foi removido."
@@ -48,7 +52,12 @@ export default async function DisplayContentsPage({
   }
 
   return (
-    <AdminPageShell navItems={navItems} brandSubtitle="Painel de gerenciamento">
+    <AdminPageShell
+      navItems={navItems}
+      brandSubtitle="Digital signage enterprise"
+      pageTitle="Conteúdos do Display"
+      pageSubtitle="Gerencie mídias, ordem de exibição e tempos do display selecionado."
+    >
       <PageHeader
         title="Conteúdos do Display"
         description="Organize a ordem de reprodução, ajuste o tempo de exibição e envie novas mídias para o display selecionado."

@@ -4,13 +4,17 @@ import { AdminPageShell } from "@/components/ui/admin-page-shell";
 import { PageHeader } from "@/components/ui/page-header";
 
 const navItems = [
-  { href: "/admin/displays", label: "Displays" },
-  { href: "/admin/displays/new", label: "Novo Display", active: true },
+  { href: "/admin/displays", label: "Displays", active: true },
 ];
 
 export default function NewDisplayPage() {
   return (
-    <AdminPageShell navItems={navItems} brandSubtitle="Painel de gerenciamento">
+    <AdminPageShell
+      navItems={navItems}
+      brandSubtitle="Digital signage enterprise"
+      pageTitle="Novo Display"
+      pageSubtitle="Crie um novo ponto de exibição e defina a configuração inicial do player administrativo."
+    >
       <PageHeader
         title="Novo Display"
         description="Cadastre um novo display com nome amigável e rotação inicial para facilitar a operação do player."

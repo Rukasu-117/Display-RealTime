@@ -8,7 +8,6 @@ export const dynamic = "force-dynamic";
 
 const navItems = [
   { href: "/admin/displays", label: "Displays", active: true },
-  { href: "/admin/displays/new", label: "Novo Display" },
 ];
 
 export default async function DisplaysPage() {
@@ -24,10 +23,12 @@ export default async function DisplaysPage() {
   return (
     <AdminPageShell
       navItems={navItems}
-      brandSubtitle="Painel de gerenciamento"
+      brandSubtitle="Digital signage enterprise"
+      pageTitle="Displays"
+      pageSubtitle="Gerencie displays, playlists e previews em uma superfície administrativa segura e preparada para crescer."
       sidebarFooter={
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-xs text-[var(--color-text-muted)]">
-          Organize displays e monitore os atalhos de edição, conteúdos e preview.
+        <div className="rounded-[1.5rem] border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-xs leading-6 text-[var(--color-text-muted)] backdrop-blur-xl">
+          Operação ativa. Os atalhos desta área atualizam o runtime público sem duplicar a lógica do player.
         </div>
       }
     >

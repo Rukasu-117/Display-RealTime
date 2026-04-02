@@ -8,7 +8,6 @@ import { prisma } from "@/lib/prisma";
 
 const navItems = [
   { href: "/admin/displays", label: "Displays", active: true },
-  { href: "/admin/displays/new", label: "Novo Display" },
 ];
 
 export default async function DisplayPreviewPage({
@@ -27,7 +26,12 @@ export default async function DisplayPreviewPage({
 
   if (!display) {
     return (
-      <AdminPageShell navItems={navItems} brandSubtitle="Painel de gerenciamento">
+      <AdminPageShell
+        navItems={navItems}
+        brandSubtitle="Digital signage enterprise"
+        pageTitle="Preview do Display"
+        pageSubtitle="O display solicitado não foi encontrado ou já foi removido."
+      >
         <PageHeader
           title="Preview do Display"
           description="O display solicitado nao foi encontrado ou ja foi removido."
@@ -49,7 +53,12 @@ export default async function DisplayPreviewPage({
   }
 
   return (
-    <AdminPageShell navItems={navItems} brandSubtitle="Painel de gerenciamento">
+    <AdminPageShell
+      navItems={navItems}
+      brandSubtitle="Digital signage enterprise"
+      pageTitle="Preview do Display"
+      pageSubtitle="Valide o player público em contexto administrativo antes da publicação final."
+    >
       <PageHeader
         title="Preview do Display"
         description="Revise o player publico sem sair do admin e abra a versao em tela cheia quando precisar validar a experiencia final."

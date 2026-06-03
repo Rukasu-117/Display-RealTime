@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { NextResponse } from "next/server";
+import { getContentTypeForPath } from "@/lib/file-media";
 
 export async function GET(
   req: Request,
@@ -21,7 +22,7 @@ export async function GET(
 
   return new NextResponse(file, {
     headers: {
-      "Content-Type": "application/octet-stream",
+      "Content-Type": getContentTypeForPath(filePath),
       "Cache-Control": "no-store, no-cache, must-revalidate",
     },
   });

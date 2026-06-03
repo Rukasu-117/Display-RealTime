@@ -32,3 +32,4 @@ nul
 # Local tooling
 tmp/
 .opencode/
+.worktrees/

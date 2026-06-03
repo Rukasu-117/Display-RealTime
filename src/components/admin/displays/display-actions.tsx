@@ -2,18 +2,45 @@
 
 import Link from "next/link";
 import { ConfirmActionButton } from "@/components/ui/confirm-action-button";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface DisplayActionsProps {
   displayId: string;
 }
 
 export function DisplayActions({ displayId }: DisplayActionsProps) {
+  const [isSyncing, setIsSyncing] = useState(false);
+
   async function removeDisplay() {
     await fetch(`/api/admin/display/${displayId}`, {
       method: "DELETE",
     });
 
     window.location.reload();
+  }
+
+  async function syncDisplay() {
+    try {
+      setIsSyncing(true);
+
+      const response = await fetch(`/api/admin/display/${displayId}/sync`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ delayMs: 3000 }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao sincronizar o display");
+      }
+    } catch (error) {
+      console.error(error);
+      window.alert("Nao foi possivel sincronizar este display.");
+    } finally {
+      window.setTimeout(() => {
+        setIsSyncing(false);
+      }, 3200);
+    }
   }
 
   return (
@@ -40,6 +67,15 @@ export function DisplayActions({ displayId }: DisplayActionsProps) {
       >
         Visualizar
       </a>
+
+      <Button
+        size="sm"
+        variant="secondary"
+        onClick={syncDisplay}
+        disabled={isSyncing}
+      >
+        {isSyncing ? "Sincronizando..." : "Sincronizar displays"}
+      </Button>
 
       <ConfirmActionButton
         size="sm"
